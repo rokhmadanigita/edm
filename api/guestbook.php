@@ -14,6 +14,7 @@ $pdo->exec("CREATE TABLE IF NOT EXISTS guestbook (
 
 switch ($action) {
     case 'list':
+        requireAdmin();
         $stmt = $pdo->query("SELECT id, nama AS name, email, pesan AS message, DATE_FORMAT(dibuat_pada, '%d %M %Y %H:%i') AS date FROM guestbook ORDER BY id DESC LIMIT 40");
         respond(['rows' => $stmt->fetchAll()]);
         break;
@@ -30,6 +31,14 @@ switch ($action) {
         $stmt = $pdo->prepare('INSERT INTO guestbook (nama, email, pesan) VALUES (?, ?, ?)');
         $stmt->execute([$name, $email ?: null, $message]);
 
+        respond(['ok' => true]);
+        break;
+
+    case 'delete':
+        requireAdmin();
+        $id = (int) ($body['id'] ?? 0);
+        $stmt = $pdo->prepare('DELETE FROM guestbook WHERE id = ?');
+        $stmt->execute([$id]);
         respond(['ok' => true]);
         break;
 

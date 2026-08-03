@@ -12,6 +12,7 @@ if (!$isAdminSession) { header('Location: ' . edm_url('admin-login.php')); exit;
     <button data-t="rekap" class="active" onclick="setAdminTab('rekap')">Rekap Absensi</button>
     <button data-t="berita" onclick="setAdminTab('berita')">Kelola Berita</button>
     <button data-t="siswa" onclick="setAdminTab('siswa')">Daftar Peserta</button>
+    <button data-t="guestbook" onclick="setAdminTab('guestbook')">Buku Tamu</button>
     <button onclick="adminLogout()" style="margin-top:20px; color:var(--warn);">Keluar</button>
   </div>
   <div class="admin-main">
@@ -50,6 +51,14 @@ if (!$isAdminSession) { header('Location: ' . edm_url('admin-login.php')); exit;
         <span class="helptext">Peserta mendaftar sendiri lewat halaman Daftar Akun.</span>
       </div>
       <div class="roster-list" id="rosterList"></div>
+    </div>
+
+    <div class="admin-tab" id="tab-guestbook">
+      <div class="section-head" style="border:none; margin-bottom:12px; padding-bottom:0;">
+        <h2 style="font-size:22px;">Pesan Buku Tamu</h2>
+        <span class="helptext">Pesan yang dikirim dari halaman Buku Tamu akan muncul di sini.</span>
+      </div>
+      <div class="guestbook-admin-list" id="guestbookAdminList"></div>
     </div>
 
   </div>
@@ -236,6 +245,34 @@ async function deleteStudent(id){
   }catch(e){ alert(e.message); }
 }
 
+async function renderGuestbookAdmin(){
+  const list = document.getElementById('guestbookAdminList');
+  try{
+    const res = await api('api/guestbook.php?action=list');
+    list.innerHTML = res.rows.map(g => `
+      <div class="news-admin-item">
+        <div>
+          <span class="news-tag" style="color:#c6a15b;">${escapeHTML(g.date)}</span>
+          <h4>${escapeHTML(g.name)}</h4>
+          ${g.email ? `<p><strong>Email:</strong> ${escapeHTML(g.email)}</p>` : ''}
+          <p>${escapeHTML(g.message)}</p>
+        </div>
+        <div style="display:flex; gap:8px; flex-shrink:0;">
+          <button class="icon-btn danger" onclick="deleteGuestbook(${g.id})">Hapus</button>
+        </div>
+      </div>`).join('') || '<p class="empty-note">— belum ada pesan buku tamu —</p>';
+  }catch(e){
+    list.innerHTML = `<p class="empty-note">Gagal memuat pesan buku tamu: ${escapeHTML(e.message)}</p>`;
+  }
+}
+async function deleteGuestbook(id){
+  if(!confirm('Hapus pesan buku tamu ini?')) return;
+  try{
+    await api('api/guestbook.php?action=delete', 'POST', {id});
+    renderGuestbookAdmin();
+  }catch(e){ alert(e.message); }
+}
+
 function closeModal(id){ document.getElementById(id).classList.remove('show'); }
 document.querySelectorAll('.modal-bg').forEach(bg => {
   bg.addEventListener('click', e => { if(e.target === bg) bg.classList.remove('show'); });
@@ -245,6 +282,7 @@ renderStats();
 renderRekap();
 renderNewsAdmin();
 renderRoster();
+renderGuestbookAdmin();
 JS;
 require_once __DIR__ . '/partials/footer.php';
 ?>

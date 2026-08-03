@@ -19,7 +19,7 @@ $pageScript = <<<'JS'
 (async function(){
   const el = document.getElementById('articleContent');
   try{
-    const res = await api('api/news.php?action=detail&id={$newsId}');
+    const res = await api('api/news.php?action=detail&id=<?= (int) $newsId ?>');
     const n = res.news;
     document.title = n.title + ' — ED Management';
     el.innerHTML = `

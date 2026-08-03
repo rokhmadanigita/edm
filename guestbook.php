@@ -34,43 +34,11 @@ require_once __DIR__ . '/partials/header.php';
       </div>
     </div>
 
-    <div class="guestbook-list">
-      <div class="section-head" style="padding-bottom:0; margin-bottom:10px; border-bottom:none;">
-        <h2>Pesan Terbaru</h2>
-        <span class="num">40 entri terakhir</span>
-      </div>
-      <div class="guestbook-entries" id="guestbookEntries"></div>
-      <p class="empty-note" id="guestbookEmpty" style="display:none;">Belum ada pesan. Jadilah yang pertama menyapa ED Management.</p>
-    </div>
   </div>
 </section>
 
 <?php
 $pageScript = <<<'JS'
-async function loadGuestbook(){
-  const entries = document.getElementById('guestbookEntries');
-  const empty = document.getElementById('guestbookEmpty');
-  try{
-    const res = await api('api/guestbook.php?action=list');
-    entries.innerHTML = res.rows.map(r => `
-      <article class="guestbook-card">
-        <div class="guestbook-card-meta">
-          <div>
-            <strong>${escapeHTML(r.name)}</strong>
-            ${r.email ? `<a href="mailto:${escapeHTML(r.email)}">${escapeHTML(r.email)}</a>` : ''}
-          </div>
-          <span class="guestbook-card-date">${escapeHTML(r.date)}</span>
-        </div>
-        <p class="guestbook-card-message">${escapeHTML(r.message)}</p>
-      </article>
-    `).join('');
-    empty.style.display = res.rows.length ? 'none' : 'block';
-  }catch(e){
-    entries.innerHTML = `<p class="empty-note">Gagal memuat daftar pesan: ${escapeHTML(e.message)}</p>`;
-    empty.style.display = 'none';
-  }
-}
-
 async function submitGuestbook(){
   const name = document.getElementById('gbName').value.trim();
   const email = document.getElementById('gbEmail').value.trim();
@@ -85,14 +53,11 @@ async function submitGuestbook(){
     document.getElementById('gbName').value = '';
     document.getElementById('gbEmail').value = '';
     document.getElementById('gbMessage').value = '';
-    loadGuestbook();
   }catch(e){
     msg.textContent = e.message;
     msg.className = 'msg show err';
   }
 }
-
-loadGuestbook();
 JS;
 require_once __DIR__ . '/partials/footer.php';
 ?>

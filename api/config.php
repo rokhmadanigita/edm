@@ -7,5 +7,5 @@ define('DB_PASS', '');
 
 define('ADMIN_PASSWORD', 'edmanagement2026');
 
-define('GOOGLE_SHEET_ENABLED', false);
-define('GOOGLE_SHEET_WEBHOOK_URL', 'https://script.google.com/macros/s/AKfycbwe7_zjpdtiXwKntVEISkLSxinQ2SIXmuI74Ax4Jzhu3-fioWNN5jPUHbedlHB1LUZ-bQ/exec');
+define('GOOGLE_SHEET_ENABLED', true);
+define('GOOGLE_SHEET_WEBHOOK_URL', 'https://script.google.com/macros/s/AKfycbxFnJOsjWYFzlBPHlVCdj6l2bYEYPKggoVjHlTU9_4ya62jLHir2M9D7sJz3dGPhxx3tA/exec');
