@@ -1,9 +1,6 @@
 <?php
 $pageTitle = 'Absen PKL — ED Management';
 $activePage = 'absen';
-$isLoggedIn = false;
-$studentName = '';
-$isAdminSession = false;
 require_once __DIR__ . '/partials/header.php';
 ?>
 
@@ -48,19 +45,24 @@ require_once __DIR__ . '/partials/header.php';
           <div class="form-grid">
             <div>
               <label>Status</label>
-              <div class="type-toggle">
+              <div class="type-toggle type-toggle-3">
                 <button type="button" id="btnMasuk" class="active" onclick="setAbsenType('masuk')">Masuk</button>
-                <button type="button" id="btnPulang" onclick="setAbsenType('pulang')">Pulang</button>
+                <button type="button" id="btnIzin" onclick="setAbsenType('izin')">Izin</button>
+                <button type="button" id="btnSakit" onclick="setAbsenType('sakit')">Sakit</button>
               </div>
             </div>
             <div>
-              <label for="absenCatatan">Catatan (opsional)</label>
-              <textarea id="absenCatatan" placeholder="cth. izin datang telat karena hujan"></textarea>
+              <label for="absenCatatan">Catatan / alasan</label>
+              <textarea id="absenCatatan" placeholder="cth. izin datang terlambat karena hujan, atau sakit dan butuh istirahat"></textarea>
             </div>
             <div>
-              <label for="absenPhoto">Foto masuk dari kamera</label>
-              <input id="absenPhoto" type="file" accept="image/*" capture="environment" />
-              <small class="helptext">Untuk absensi masuk, foto diambil langsung dari kamera HP supaya tidak perlu memilih dari galeri.</small>
+              <label for="absenPhoto">Foto bukti</label>
+              <div class="file-upload-wrap">
+                <input id="absenPhoto" type="file" accept="image/*" capture="environment" />
+                <label for="absenPhoto" class="file-upload-btn">Ambil foto kamera</label>
+                <span class="file-upload-name" id="absenPhotoName">Belum ada foto dipilih</span>
+              </div>
+              <small class="helptext">Kamera akan terbuka langsung untuk menangkap foto. Untuk status Masuk, Izin, atau Sakit, foto diri wajib diambil.</small>
             </div>
             <button class="btn btn-dark btn-block" onclick="submitAbsen()">Catat Kehadiran</button>
             <div class="msg" id="absenMsg"></div>
@@ -73,8 +75,8 @@ require_once __DIR__ . '/partials/header.php';
               <span class="label" style="color:var(--ivory);">Petunjuk singkat</span>
               <ul class="program-list" style="color:var(--ivory);">
                 <li><b>⏱️</b> Pastikan jam saat ini sesuai sebelum tekan absen.</li>
-                <li><b>→</b> Pilih Masuk saat tiba dan Pulang saat selesai PKL.</li>
-                <li><b>•</b> Catat alasan telat atau izin di kolom catatan.</li>
+                <li><b>→</b> Pilih Masuk, Izin, atau Sakit sesuai kondisi hari ini.</li>
+                <li><b>•</b> Tulis alasan di kolom catatan agar rekap lebih jelas.</li>
               </ul>
             </div>
             <div>
@@ -124,7 +126,10 @@ require_once __DIR__ . '/partials/header.php';
           </div>
           <div>
             <label for="newsPhotoInput">Foto berita (opsional)</label>
-            <input type="file" id="newsPhotoInput" accept="image/*">
+            <div class="file-upload-wrap file-upload-wrap-sm">
+              <input type="file" id="newsPhotoInput" accept="image/*">
+              <span class="file-upload-name" id="newsPhotoName">Belum ada foto dipilih</span>
+            </div>
           </div>
           <div>
             <label for="newsBodyInput">Isi berita</label>
@@ -145,7 +150,8 @@ let absenType = 'masuk';
 function setAbsenType(t){
   absenType = t;
   document.getElementById('btnMasuk').classList.toggle('active', t==='masuk');
-  document.getElementById('btnPulang').classList.toggle('active', t==='pulang');
+  document.getElementById('btnIzin').classList.toggle('active', t==='izin');
+  document.getElementById('btnSakit').classList.toggle('active', t==='sakit');
 }
 
 async function doLogout(){
@@ -175,6 +181,7 @@ function readPhotoData(file){
 async function submitAbsen(){
   const note = document.getElementById('absenCatatan').value.trim();
   const photoInput = document.getElementById('absenPhoto');
+  const photoNameEl = document.getElementById('absenPhotoName');
   const msg = document.getElementById('absenMsg');
   try{
     const photo = await readPhotoData(photoInput && photoInput.files ? photoInput.files[0] : null);
@@ -187,6 +194,7 @@ async function submitAbsen(){
     msg.className = 'msg show ok';
     document.getElementById('absenCatatan').value = '';
     if (photoInput) photoInput.value = '';
+    if (photoNameEl) photoNameEl.textContent = 'Belum ada foto dipilih';
     renderTodayLog();
     renderRank();
   }catch(e){
@@ -253,6 +261,7 @@ async function submitNews(){
   const tag = document.getElementById('newsTagInput').value.trim();
   const body = document.getElementById('newsBodyInput').value.trim();
   const photoInput = document.getElementById('newsPhotoInput');
+  const photoNameEl = document.getElementById('newsPhotoName');
   const msg = document.getElementById('newsMsg');
   try{
     if(!title || !body) throw new Error('Judul dan isi berita wajib diisi.');
@@ -264,6 +273,7 @@ async function submitNews(){
     document.getElementById('newsTagInput').value = '';
     document.getElementById('newsBodyInput').value = '';
     if (photoInput) photoInput.value = '';
+    if (photoNameEl) photoNameEl.textContent = 'Belum ada foto dipilih';
   }catch(e){
     msg.textContent = e.message;
     msg.className = 'msg show err';
@@ -273,6 +283,28 @@ async function submitNews(){
 async function initAbsenPage(){
   updateClock();
   setInterval(updateClock, 1000);
+
+  const photoInput = document.getElementById('absenPhoto');
+  const photoNameEl = document.getElementById('absenPhotoName');
+  const newsPhotoInput = document.getElementById('newsPhotoInput');
+  const newsPhotoNameEl = document.getElementById('newsPhotoName');
+
+  if (photoInput && photoNameEl) {
+    photoInput.addEventListener('change', () => {
+      photoNameEl.textContent = photoInput.files && photoInput.files[0]
+        ? photoInput.files[0].name
+        : 'Belum ada foto dipilih';
+    });
+  }
+
+  if (newsPhotoInput && newsPhotoNameEl) {
+    newsPhotoInput.addEventListener('change', () => {
+      newsPhotoNameEl.textContent = newsPhotoInput.files && newsPhotoInput.files[0]
+        ? newsPhotoInput.files[0].name
+        : 'Belum ada foto dipilih';
+    });
+  }
+
   try{
     const me = await api('api/auth_student.php?action=me');
     if(!me.student){ window.location.href = edmUrl('masuk.php'); return; }

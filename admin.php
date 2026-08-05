@@ -1,4 +1,4 @@
-<?php
+Okay<?php
 $pageTitle = 'Panel Admin — ED Management';
 $isLoggedIn = false;
 $studentName = '';
@@ -25,7 +25,8 @@ if (!$isAdminSession) { header('Location: ' . edm_url('admin-login.php')); exit;
         <select id="filterStatus" onchange="renderRekap()">
           <option value="">Semua status</option>
           <option value="masuk">Masuk</option>
-          <option value="pulang">Pulang</option>
+          <option value="izin">Izin</option>
+          <option value="sakit">Sakit</option>
         </select>
         <button class="icon-btn" onclick="clearFilters()">Reset filter</button>
       </div>

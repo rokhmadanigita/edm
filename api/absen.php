@@ -57,12 +57,13 @@ switch ($action) {
     $s = $stmt->fetch();
     if (!$s) respond(['error' => 'Akun tidak ditemukan.'], 404);
 
-    $jenis = (($body['type'] ?? '') === 'pulang') ? 'pulang' : 'masuk';
+    $allowedTypes = ['masuk', 'izin', 'sakit'];
+    $jenis = in_array(($body['type'] ?? ''), $allowedTypes, true) ? ($body['type'] ?? '') : 'masuk';
     $catatan = trim($body['note'] ?? '');
     $photo = isset($body['photo']) && is_string($body['photo']) ? trim($body['photo']) : '';
 
-    if ($jenis === 'masuk' && !$photo) {
-        respond(['error' => 'Ambil foto dari kamera dulu sebelum absen masuk.'], 400);
+    if (!$photo) {
+        respond(['error' => 'Ambil foto diri dari kamera dulu sebelum menyimpan status absen.'], 400);
     }
 
     $photoFilename = null;
